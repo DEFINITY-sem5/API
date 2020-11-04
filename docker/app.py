@@ -1,4 +1,8 @@
 from flask import Flask
+from newspaper import Article
+import numpy
+from threading import Thread
+
 app = Flask(__name__)
 
 @app.route('/')

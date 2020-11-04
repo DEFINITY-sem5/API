@@ -1,1 +1,4 @@
 Flask==0.10.1
+newspaper==0.2.8
+numpy
+threading
