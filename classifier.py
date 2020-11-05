@@ -16,7 +16,7 @@ class Fakenews_classifier(api_model):
         self.classes = ['Fake', 'Reliable']
         with open('saved_models/FakeNews_savedmodel/clickbait_tokenizer.pickle', 'rb') as fn_handle:
             self.tkn = pickle.load(fn_handle)
-
+        
 
 class Clickbait_classifier():
     def __init__(self, debug=True):
