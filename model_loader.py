@@ -72,3 +72,52 @@ class cb_classifier(api_model):
             print(" * [d] Test sequence", processed_input)
 
         return processed_input
+
+
+
+class fn_classifier(api_model):
+
+    def __init__(self, debug=True):
+        self.name = "Fake News Classifier"
+        self.debug = debug
+        self.model = load_model("saved_models/FakeNews_savedmodel/fakenews_model.h5")
+        self.model._make_predict_function()
+        self.classes = ["fake", "reliable"]
+        with open('saved_models/FakeNews_savedmodel/clickbait_tokenizer.pickle', 'rb') as handle:
+            self.tokenizer = pickle.load(handle)
+        if self.debug:
+            if self.run_self_test():
+                print(" * [i] Model: " + self.name +
+                      " has loaded successfully")
+            else:
+                print(" * [!] An error has occured in self test!!")
+
+    def run_self_test(self):
+        input_sequence = self.preprocess(
+            ["Hello there this is to cache the stops words I think not really sure why else got error when threaded lmao"])
+        self.model.predict(input_sequence)
+        return True
+
+    @functools.lru_cache(maxsize=512, typed=False)
+    def predict(self, input_data):
+        input_sequence = self.preprocess(input_data)
+        preds = self.model.predict(input_sequence)
+        pred = preds.argmax(axis=-1)
+        output = self.classes[pred[0]]
+        return output
+
+    def clean_text(self, text):
+        output = ""
+        text = str(text).replace("\n", "")
+        text = re.sub(r'[^\w\s]', '', text).lower().split(" ")
+        for word in text:
+            if word not in stopwords.words("english"):
+                output = output + " " + word
+        return output.strip().replace("  ", " ")
+
+    def preprocess(self, input_data):
+        input_string = self.clean_text(input_data)
+        input_token = self.tokenizer.texts_to_sequences([input_string])
+        processed_input = pad_sequences(
+            input_token, padding='post', maxlen=(200))
+        return processed_input
