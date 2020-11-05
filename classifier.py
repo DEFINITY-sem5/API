@@ -6,20 +6,23 @@ from keras.models import load_model
 import pickle
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+from base import *
 
-class Fakenews_classifier():
-    def __init__(debug=True):
-        name = "Fake News Classifier"
-        fn_model = load_model("saved_models/FakeNews_savedmodel/fakenews_model.h5")
-        classes = ['Fake', 'Reliable']
+class Fakenews_classifier(api_model):
+    def __init__(self, debug=True):
+        self.name = "Fake News Classifier"
+        self.debug = debug
+        self.model = load_model("saved_models/FakeNews_savedmodel/fakenews_model.h5")
+        self.classes = ['Fake', 'Reliable']
         with open('saved_models/FakeNews_savedmodel/clickbait_tokenizer.pickle', 'rb') as fn_handle:
-            fn_tkn = pickle.load(fn_handle)
+            self.tkn = pickle.load(fn_handle)
 
 
 class Clickbait_classifier():
-    def __init__(debug=True):
-        name = "Clickbait Classifier"
-        cb_model = load_model("saved_models/Clickbait_savedmodel/clickbait_model.h5")
-        classes = ['clickbait', 'not-clickbait']
+    def __init__(self, debug=True):
+        self.name = "Clickbait Classifier"
+        self.debug = debug
+        self.model = load_model("saved_models/Clickbait_savedmodel/clickbait_model.h5")
+        self.classes = ['clickbait', 'not-clickbait']
         with open("saved_models/Clickbait_savedmodel/clickbait_tokenizer.pickle",'rb') as cb_handle:
-            cb_tkn = pickle.load(cb_handle)
+            self.tkn = pickle.load(cb_handle)
