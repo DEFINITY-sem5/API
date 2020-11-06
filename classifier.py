@@ -33,7 +33,26 @@ class Clickbait_classifier():
                       " has loaded successfully")
             else:
                 print(" * [!] An error has occured in self test!!")
-
+    def run_self_test(self):
+        print(" * [i] Performing self-test...")
+        try:
+            # warm-up run
+            test_string = self.preprocess(
+                "32 ways to test a server. You won't believe no. 3!")
+            self.model.predict(test_string)
+            # benchmark run
+            start = time.time()
+            test_string = self.preprocess(
+                "99 ways to wreck a paper. You will believe no. 4!")
+            self.model.predict(test_string)
+            print(" * [i] Server can process ", round(1 /
+                                                      (time.time()-start), 1), "predictions per second")
+            return True
+        except Exception as e:
+            print(" * [!] An error has occured:")
+            print(e)
+            return False
+            
     @functools.lru_cache(maxsize=512, typed=False)
     def predict(self, input_data):
         processed_input = self.preprocess(input_data)
