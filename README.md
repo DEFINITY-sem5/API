@@ -1,9 +1,3 @@
-# API
+A very basic html extractor from URL using [newspaper](https://github.com/codelucas/newspaper) to extract the html tag containing the relevant contents of the URL, and [flask](http://flask.pocoo.org/) to expose the API.
 
-## All the backend to front-end connection is set to be here.
-
-
-
-to run the docker image
-
-open the ```API``` folder in command line and enter ``` build-compose up```, considering you have docker installed on your system.
+[Read the blog post](http://bitwiser.in/2016/06/09/make-a-pocket-app-like-html-parser-using-python.html)

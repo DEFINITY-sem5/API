@@ -1,84 +1,56 @@
-import numpy as np
-from newspaper import Article
 import re
-import functools
-import flask
-import urllib3
-from threading import Thread
-from classifier import *
 
-#app 
-app = flask.Flask(__name__)
+from flask import (
+    Flask,
+    render_template,
+    jsonify,
+    request
+)
 
-model_cb = None
-model_fn = None
+from extractor import extract
 
-def Load_ML():
-    global model_cb, model_fn
-    model_fn = Fakenews_classifier()
-    model_cb = Clickbait_classifier()
+URL_REGEX = re.compile(
+    "([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d"
+    "|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])"
+    "|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?((\[(|(v"
+    "[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!\$&'\(\)\*\+,;=]"
+    "|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\."
+    "(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d"
+    "|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))"
+    "|(([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])"
+    "|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\."
+    "|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|"
+    "[!\$&'\(\)\*\+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\x00A0-"
+    "\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)"
+    "\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-"
+    "\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)"
+    "?)|((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])"
+    "|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|"
+    "[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)"
+    "\*\+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF"
+    "\xFDF0-\xFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)){0})"
+    "(\?((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])"
+    "|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\xE000-\xF8FF]|\/|\?)*)?"
+    "(\#((([a-z]|\d|-|\.|_|~|[\x00A0-\xD7FF\xF900-\xFDCF\xFDF0-\xFFEF])"
+    "|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?""")
 
-Load_ML()
-
-def pred_clickbait(input_):
-    global model_clickbait, data
-    data["clickbait"] = model_cb.predict(input_)
-
-def pred_fakenews(input_):
-    global model_profile, data
-    data["article_profile"] = model_fn.predict(input_) 
-
-urllib3.disable_warnings()
-np.warnings.filterwarnings('ignore')
-
-
-data = {"success": False}
-#to look into URL's
-def read(url):
-    article = Article(url, fetch_images = False)
-    article.download()
-    article.parse()
-    article_title = article.title
-    article_text = article.text
-    return(article_title, article_text)
+app = Flask(__name__)
 
 
-@functools.lru_cache(maxsize=512, typed=False)
-@app.route("/predict", methods=["POST"])
-
-def predict():
-
-    global model_cb, model_fn
-    global data
-
-    data = {"success" : False}
-
-    if flask.request.method == "POST":
-        #url = flask.request.args.get("url")
-        url = "https://timesofindia.indiatimes.com/city/mumbai/no-evidence-to-show-juhu-cops-intended-to-cause-death-court/articleshow/79074605.cms"
-        article_title, article_text = read(url)
-
-        threads=[]
-
-        if article_title is not None:
-            t = Thread(target=pred_fakenews, args=([article_text]))
-            threads.append(t)
-            t.start
-        
-        if article_text is not None:
-            article_title = article_title.replace("%20", " ")
-            data["article_text"] = article_title
-
-            t = Thread(target=pred_clickbait, args=([article_title]))
-            threads.append(t)
-            t.start
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
-        [t.join() for t in threads]
-        data["success"] = True
+@app.route('/extract')
+def extract_url():
+    url = request.args.get('url', '')
+    if not URL_REGEX.match(url):
+        return jsonify({
+            'type': 'error',
+            'message': 'Invalid URL'
+        }), 406
+    return jsonify(type='success', message=extract(url))
 
-    return flask.jsonify(data)
-
-if __name__ == "__main__":
-    print("Starting Flask server")
-    app.run(host='0.0.0.0', port=4000)
+if __name__ == '__main__':
+    app.run(debug=True, port=4000)
