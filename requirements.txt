@@ -1,2 +1,5 @@
 flask
 newspaper
+tensorflow
+pandas
+keras
