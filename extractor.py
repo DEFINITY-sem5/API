@@ -23,6 +23,13 @@ def clickbait(title):
     output = classes[pred[0]]
     return output
 
+def fakenews(text):
+    fn_model = load_model("saved_models/FakeNews_savedmodel/fakenews_model.h5")
+    with open("saved_models/FakeNews_savedmodel/clickbait_tokenizer.pickle","rb") as fn_handle:
+        fn_tkn = pickle.load(fn_handle)
+    classes = ['fake news','legit news']
+    input_text = str(text).lower()
+
 def extract(url):
     article = Article(url=url, config=config)
     article.download()
