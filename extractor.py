@@ -63,4 +63,7 @@ def extract(url):
 
     clickbait(title)
     fakenews(text)
-    return clickbait(title), fakenews(text)
+    return dict(
+        article_text = fakenews(text),
+        article_title = clickbait(title)
+    )
