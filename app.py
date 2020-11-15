@@ -1,5 +1,5 @@
 import re
-
+from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request
 
 from extractor import extract
@@ -30,7 +30,7 @@ URL_REGEX = re.compile(
     "|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?""")
 
 app = Flask(__name__)
-
+CORS(app)
 
 @app.route('/')
 def index():
@@ -45,7 +45,9 @@ def extract_url():
             'type': 'error',
             'message': 'Invalid URL'
         }), 406
-    return jsonify(type='success', message=extract(url))
+    message=extract(url)
+    return render_template('index.html', prediction_text='The news is "{}"'.format(message))
 
 if __name__ == '__main__':
     app.run(debug='True', port='5000')
+    
