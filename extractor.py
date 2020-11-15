@@ -1,3 +1,5 @@
+from flask import jsonify
+import json
 from newspaper import Article, Config
 from keras.models import load_model
 from keras.preprocessing.text import Tokenizer 
@@ -37,8 +39,7 @@ def clickbait(title):
     preds = cb_model.predict(processed_input)
     pred = preds.argmax(axis=-1)
     output = classes[pred[0]]
-    a = jsonify(output)
-    return a
+    return output
 
 def fakenews(text):
     fn_model = load_model("saved_models/FakeNews_savedmodel/fakenews_model.h5")
@@ -53,25 +54,20 @@ def fakenews(text):
     preds = fn_model.predict(processed_input)
     pred = preds.argmax(axis=-1)
     output = classes[pred[0]]
-    a = jsonify(output)
-    return a
+    return output
 
 def extract(url):
     article = Article(url=url, config=config)
     article.download()
     article.parse()
-    a = article.title
-    title1 = jsonify(a)
     title = article.title
-    b = article.text
-    text1 = jsonify(b)
     text = article.text
-
     clickbait(title)
     fakenews(text)
     return dict(
-        title = title1,
-        text = text1, 
-        article_text = fakenews(text),
-        article_title = clickbait(title)
-    )
+        art_title = title, 
+        title_out = clickbait(title),
+        art_text = text, 
+        text_out = fakenews(text))
+    
+
