@@ -3,3 +3,4 @@ newspaper
 tensorflow
 pandas
 keras
+gunicorn
