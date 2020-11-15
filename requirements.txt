@@ -1,5 +1,5 @@
 flask
-newspaper
+newspaper3k
 tensorflow
 pandas
 keras
