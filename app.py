@@ -40,13 +40,16 @@ def index():
 @app.route('/extract')
 def extract_url():
     url = request.args.get('url', '')
+    err = "enter a valid URL"
     if not URL_REGEX.match(url):
-        return jsonify({
-            'type': 'error',
-            'message': 'Invalid URL'
-        }), 406
+        return render_template('index.html', error='"{}"'.format(err))
     message=extract(url)
-    return render_template('index.html', prediction_text='The news is "{}"'.format(message))
+    return render_template('index.html', 
+    headline='"{}"'.format(message[0]),
+    title_out='"{}"'.format(message[2]),
+    news='"{}"'.format(message[1]),
+    text_out='"{}"'.format(message[3])
+    )
 
 if __name__ == '__main__':
     app.run(debug='True', port='5000')

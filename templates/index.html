@@ -16,18 +16,26 @@
 
 <body>
  <div class="login">
-	<h1>Predict Fake News</h1>
+	<h1>DEFINITY</h1>
 
      <!-- Main Input For Receiving Query to our ML -->
      <form action="/extract">
         <input autocomplete="off" type="text" name="url" placeholder="Enter a URL" />
         <button type="submit">Submit</button>
     </form>
-
+    {{ error }}
    <br>
    <br>
-   {{ prediction_text }}
-
+   <h6>{{ headline }}</h6>
+   <br>
+   <h1>{{ title_out }}</h1>
+   <br>
+   <br>
+   <h6>
+   {{ news }}</h6>
+   <br>
+   <h1>
+   {{ text_out }}</h1>
  </div>
 
 
